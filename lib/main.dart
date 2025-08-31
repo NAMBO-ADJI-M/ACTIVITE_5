@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:activite5/widgets/drawer_widget.dart';
+import 'package:activite5/interface_redacteur/redacteur_interface.dart';
+import 'package:activite5/screen/liste_redacteurs_screen.dart';
+//import 'package:google_fonts/google_fonts.dart';
 
 void main() => runApp(MonAppli());
 
@@ -7,10 +11,15 @@ class MonAppli extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      initialRoute: '/',
+      routes: {
+        '/': (context) => PageAccueil(),
+        '/Enregistrer': (context) => RedacteurInterface(),
+        '/listeRedacteurs': (context) => const ListeRedacteursScreen(),
+      },
       title: 'Magazines',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(primarySwatch: Colors.blue, fontFamily: 'poppins'),
       debugShowCheckedModeBanner: false,
-      home: PageAccueil(),
     );
   }
 }
@@ -28,7 +37,13 @@ class PageAccueil extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.pink,
         foregroundColor: Colors.white,
-        leading: IconButton(onPressed: () {}, icon: Icon(Icons.menu)),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.menu),
+            color: Colors.white,
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
         actions: [IconButton(onPressed: () {}, icon: Icon(Icons.search))],
       ),
       body: SingleChildScrollView(
@@ -49,6 +64,7 @@ class PageAccueil extends StatelessWidget {
       ),
       //floatingActionButton:,
       //bottomnavigationBar:,
+      drawer: DrawerWidget(),
     );
   }
 }
@@ -71,7 +87,10 @@ class PartieTitre extends StatelessWidget {
           SizedBox(height: 10),
           Text(
             'Votre Magazine numérique, votre source d\'inspirations',
-            style: TextStyle(fontSize: 16, color: const Color.fromARGB(172, 37, 37, 37)),
+            style: TextStyle(
+              fontSize: 16,
+              color: const Color.fromARGB(172, 37, 37, 37),
+            ),
           ),
         ],
       ),
