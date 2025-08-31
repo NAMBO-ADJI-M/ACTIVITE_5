@@ -1,46 +1,23 @@
-/*import 'package:flutter/material.dart';
-import 'package:activite4/interface_redacteur/redacteur_interface.dart';
-
-class RedacteurWidget extends StatelessWidget {
-  const RedacteurWidget({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'GESTIONNAIRE',
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: Colors.pinkAccent,
-          foregroundColor: Colors.white,
-          title: Text('Gestion des Redacteurs'),
-          leading: Builder(
-            builder: (context) => IconButton(
-              onPressed: () => Scaffold.of(context).openDrawer(),
-              icon: Icon(Icons.menu),
-            ),
-          ),
-          actions: [IconButton(onPressed: () {}, icon: Icon(Icons.search))],
-        ),
-        body: RedacteurInterface(),
-      ),
-    );
-  }
-}*/
-
+// Définition de la classe Redacteur représentant un rédacteur dans l'application
 class Redacteur {
+  // Identifiant unique du rédacteur (nullable car non requis à la création)
   int? id;
+
+  // Nom, prénom et email du rédacteur
   String nom;
   String prenom;
   String email;
 
+  // Constructeur principal avec tous les champs, y compris l'id optionnel
   Redacteur({
     this.id,
     required this.nom,
     required this.prenom,
     required this.email,
   });
-   // Méthode copyWith
+
+  // Méthode utilitaire permettant de créer une copie du rédacteur
+  // avec des champs modifiés si nécessaire
   Redacteur copyWith({
     int? id,
     String? nom,
@@ -55,23 +32,29 @@ class Redacteur {
     );
   }
 
-  // Constructeur sans id
+  // Constructeur alternatif sans id, utile pour l'insertion en base
   Redacteur.withoutId({
     required this.nom,
     required this.prenom,
     required this.email,
   });
 
-  // Conversion en Map
+  // Méthode pour convertir un objet Redacteur en Map (clé-valeur)
+  // utilisée pour l'insertion ou la mise à jour en base de données
   Map<String, dynamic> toMap() {
-    var map = <String, dynamic>{'nom': nom, 'prenom': prenom, 'email': email};
+    var map = <String, dynamic>{
+      'nom': nom,
+      'prenom': prenom,
+      'email': email,
+    };
     if (id != null) {
       map['id'] = id;
     }
     return map;
   }
 
-  // Conversion depuis Map
+  // Factory constructor pour créer un objet Redacteur à partir d'une Map
+  // utilisée lors de la lecture depuis la base de données
   factory Redacteur.fromMap(Map<String, dynamic> map) {
     return Redacteur(
       id: map['id'],

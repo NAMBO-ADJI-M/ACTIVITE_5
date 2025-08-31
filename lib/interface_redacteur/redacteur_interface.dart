@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:activite5/Modele/redacteur.dart';
-import '../database/database_manager.dart';
+// Importation des packages nécessaires
+import 'package:flutter/material.dart'; // UI Flutter
+import 'package:activite5/Modele/redacteur.dart'; // Modèle de données Redacteur
+import '../database/database_manager.dart'; // Gestion de la base de données
 
+// Widget principal de l'interface de gestion des rédacteurs
 class RedacteurInterface extends StatefulWidget {
   const RedacteurInterface({super.key});
 
@@ -9,19 +11,24 @@ class RedacteurInterface extends StatefulWidget {
   State<RedacteurInterface> createState() => _RedacteurInterfaceState();
 }
 
+// État associé au widget RedacteurInterface
 class _RedacteurInterfaceState extends State<RedacteurInterface> {
+  // Contrôleurs pour les champs de saisie
   final TextEditingController _nomController = TextEditingController();
   final TextEditingController _prenomController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
+  // Liste des rédacteurs récupérés depuis la base
   List<Redacteur> _redacteurs = [];
 
+  // Initialisation de l'état : chargement des rédacteurs
   @override
   void initState() {
     super.initState();
     _loadRedacteurs();
   }
 
+  // Fonction pour charger les rédacteurs depuis la base
   Future<void> _loadRedacteurs() async {
     final redacteurs = await DatabaseManager.instance.getAllRedacteurs();
     if (mounted) {
@@ -31,6 +38,7 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
     }
   }
 
+  // Validation des champs de saisie
   bool _validerChamps({
     required String nom,
     required String prenom,
@@ -41,6 +49,7 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
       return false;
     }
 
+    // Vérification du format de l'email
     final emailRegex = RegExp(r"^[\w\.-]+@[\w\.-]+\.\w+$");
     if (!emailRegex.hasMatch(email.trim())) {
       _afficherMessage("Adresse email invalide.");
@@ -50,14 +59,16 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
     return true;
   }
 
+  // Affichage d'un message via SnackBar
   void _afficherMessage(String message, {Color color = Colors.red}) {
     if (!mounted) return;
     final localContext = context;
-    ScaffoldMessenger.of(
-      localContext,
-    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
+    ScaffoldMessenger.of(localContext).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: color),
+    );
   }
 
+  // Ajout d'un rédacteur dans la base
   Future<void> _ajouterRedacteur() async {
     final nom = _nomController.text.trim();
     final prenom = _prenomController.text.trim();
@@ -81,6 +92,7 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
     }
   }
 
+  // Modification d'un rédacteur existant
   void _modifierRedacteur(Redacteur redacteur) {
     final nomCtrl = TextEditingController(text: redacteur.nom);
     final prenomCtrl = TextEditingController(text: redacteur.prenom);
@@ -93,50 +105,28 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: nomCtrl,
-              decoration: const InputDecoration(labelText: "Nom"),
-            ),
-            TextField(
-              controller: prenomCtrl,
-              decoration: const InputDecoration(labelText: "Prénom"),
-            ),
-            TextField(
-              controller: emailCtrl,
-              decoration: const InputDecoration(labelText: "Email"),
-            ),
+            TextField(controller: nomCtrl, decoration: const InputDecoration(labelText: "Nom")),
+            TextField(controller: prenomCtrl, decoration: const InputDecoration(labelText: "Prénom")),
+            TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: "Email")),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Annuler"),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Annuler")),
           ElevatedButton(
             onPressed: () async {
               final nom = nomCtrl.text.trim();
               final prenom = prenomCtrl.text.trim();
               final email = emailCtrl.text.trim();
 
-              if (!_validerChamps(nom: nom, prenom: prenom, email: email)) {
-                return;
-              }
+              if (!_validerChamps(nom: nom, prenom: prenom, email: email)) return;
 
-              final modifie = redacteur.copyWith(
-                nom: nom,
-                prenom: prenom,
-                email: email,
-              );
+              final modifie = redacteur.copyWith(nom: nom, prenom: prenom, email: email);
               await DatabaseManager.instance.updateRedacteur(modifie);
 
               if (mounted) {
-                // ignore: use_build_context_synchronously
-                Navigator.pop(ctx);
+                Navigator.pop(ctx); // ignore: use_build_context_synchronously
                 _loadRedacteurs();
-                _afficherMessage(
-                  "Rédacteur modifié avec succès.",
-                  color: Colors.green,
-                );
+                _afficherMessage("Rédacteur modifié avec succès.", color: Colors.green);
               }
             },
             child: const Text("Enregistrer"),
@@ -146,27 +136,22 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
     );
   }
 
+  // Confirmation avant suppression d'un rédacteur
   void _confirmerSuppression(Redacteur redacteur) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Supprimer le rédacteur"),
-        content: Text(
-          "Voulez-vous vraiment supprimer ${redacteur.nom} ${redacteur.prenom} ?",
-        ),
+        content: Text("Voulez-vous vraiment supprimer ${redacteur.nom} ${redacteur.prenom} ?"),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Annuler"),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Annuler")),
           ElevatedButton(
             onPressed: () async {
               if (redacteur.id != null) {
                 await DatabaseManager.instance.deleteRedacteur(redacteur.id!);
               }
               if (mounted) {
-                // ignore: use_build_context_synchronously
-                Navigator.pop(ctx);
+                Navigator.pop(ctx); // ignore: use_build_context_synchronously
                 _loadRedacteurs();
                 _afficherMessage("Rédacteur supprimé.", color: Colors.green);
               }
@@ -178,6 +163,7 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
     );
   }
 
+  // Construction de l'interface utilisateur
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -187,21 +173,14 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
         backgroundColor: Colors.pink,
       ),
       body: GestureDetector(
-        onTap: () =>
-            FocusScope.of(context).unfocus(), // Ferme le clavier au tap
+        onTap: () => FocusScope.of(context).unfocus(), // Ferme le clavier quand on tape ailleurs
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              TextField(
-                controller: _nomController,
-                decoration: const InputDecoration(labelText: 'Nom'),
-              ),
+              TextField(controller: _nomController, decoration: const InputDecoration(labelText: 'Nom')),
               const SizedBox(height: 8),
-              TextField(
-                controller: _prenomController,
-                decoration: const InputDecoration(labelText: 'Prénom'),
-              ),
+              TextField(controller: _prenomController, decoration: const InputDecoration(labelText: 'Prénom')),
               const SizedBox(height: 8),
               TextField(
                 controller: _emailController,
@@ -215,9 +194,7 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.pink,
                     minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                     alignment: Alignment.centerLeft,
                   ),
                   onPressed: _ajouterRedacteur,
@@ -226,10 +203,7 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
                     children: const [
                       Icon(Icons.add, color: Colors.white),
                       SizedBox(width: 8),
-                      Text(
-                        "Ajouter un Rédacteur",
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      Text("Ajouter un Rédacteur", style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -238,10 +212,10 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
               ElevatedButton.icon(
                 icon: const Icon(Icons.list),
                 label: const Text("Voir les rédacteurs"),
-                onPressed: () =>
-                    Navigator.pushNamed(context, '/listeRedacteurs'),
+                onPressed: () => Navigator.pushNamed(context, '/listeRedacteurs'),
               ),
               const SizedBox(height: 15),
+              // Liste des rédacteurs affichée dynamiquement
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -254,14 +228,8 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => _modifierRedacteur(r),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => _confirmerSuppression(r),
-                        ),
+                        IconButton(icon: const Icon(Icons.edit), onPressed: () => _modifierRedacteur(r)),
+                        IconButton(icon: const Icon(Icons.delete), onPressed: () => _confirmerSuppression(r)),
                       ],
                     ),
                   );
